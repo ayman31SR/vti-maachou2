@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Checklist VTI — Poste Source Maachou 2 | SRM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @media print {
+      body { background: #fff !important; color: #000 !important; font-size: 11px; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      .print-card { border: 1px solid #cbd5e1 !important; break-inside: avoid; margin-bottom: 10px; box-shadow: none !important; }
+      header { position: static !important; background: #fff !important; color: #0f172a !important; border-bottom: 2px solid #0f172a !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- AUTH SCREEN (EMAIL + PASSWORD) -->
+  <div id="authScreen" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 text-slate-100">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30 shrink-0">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-blue-400">SRM • Exploitation HTB/HTA</span>
+          <h1 class="text-lg font-extrabold tracking-tight text-white">Poste Source Maachou 2</h1>
+        </div>
+      </div>
+
+      <!-- Mode 1: First-time Registration -->
+      <div id="registerBox" class="hidden space-y-4">
+        <div class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3.5 text-xs text-blue-200 leading-relaxed">
+          <strong class="block text-blue-300 mb-0.5">Configuration initiale du compte</strong>
+          Enregistrez votre adresse e-mail et votre mot de passe pour verrouiller l'accès et protéger la modification du mot de passe.
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Adresse E-mail officielle</label>
+          <input id="regEmail" type="email" placeholder="exemple@domaine.com" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Mot de passe (min. 4 caractères)</label>
+          <input id="regPass" type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Confirmer le mot de passe</label>
+          <input id="regPassConfirm" type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <p id="regError" class="text-xs text-rose-400 font-medium hidden"></p>
+        <button onclick="handleRegister()" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white font-bold text-sm transition shadow-lg shadow-blue-600/25">
+          Enregistrer & Accéder à la VTI
+        </button>
+      </div>
+
+      <!-- Mode 2: Login -->
+      <div id="loginBox" class="hidden space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Adresse E-mail</label>
+          <input id="loginEmail" type="email" placeholder="Votre e-mail enregistré" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Mot de passe</label>
+          <input id="loginPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter') handleLogin()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <p id="loginError" class="text-xs text-rose-400 font-medium hidden"></p>
+        <button onclick="handleLogin()" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white font-bold text-sm transition shadow-lg shadow-blue-600/25">
+          Se connecter
+        </button>
+        <div class="pt-1 text-center">
+          <button onclick="toggleResetView(true)" class="text-xs text-slate-400 hover:text-blue-400 underline underline-offset-4 transition">
+            Mot de passe oublié ou modifier le mot de passe ?
+          </button>
+        </div>
+      </div>
+
+      <!-- Mode 3: Reset Password linked to registered Email -->
+      <div id="resetBox" class="hidden space-y-4">
+        <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-200 leading-relaxed">
+          Seul le titulaire de l'adresse e-mail enregistrée peut définir un nouveau mot de passe.
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Vérification de l'adresse E-mail</label>
+          <input id="resetEmail" type="email" placeholder="Saisissez votre e-mail enregistré" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nouveau mot de passe</label>
+          <input id="resetNewPass" type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Confirmer le nouveau mot de passe</label>
+          <input id="resetConfirmPass" type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <p id="resetError" class="text-xs text-rose-400 font-medium hidden"></p>
+        <p id="resetSuccess" class="text-xs text-emerald-400 font-medium hidden"></p>
+        <div class="flex gap-2">
+          <button onclick="toggleResetView(false)" class="w-1/3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition">
+            Retour
+          </button>
+          <button onclick="handleResetPassword()" class="w-2/3 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition">
+            Mettre à jour
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div id="appShell" class="hidden pb-20">
+    <!-- Sticky Header -->
+    <header class="sticky top-0 z-30 bg-slate-900 text-white shadow-lg border-b border-slate-800">
+      <div class="max-w-5xl mx-auto px-3 sm:px-6 py-3">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <div class="min-w-0">
+              <h1 class="text-sm sm:text-base font-extrabold tracking-tight truncate">VTI — Poste Source Maachou 2</h1>
+              <p class="text-[11px] text-slate-400 truncate">Visite Technique I (Mensuelle) • 12 Ouvrages • 286 Points</p>
+            </div>
+          </div>
+
+          <!-- Compact Actions + 3-dots menu -->
+          <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 no-print">
+            <button onclick="openSummaryModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 border border-rose-700/70 text-rose-200 text-xs font-bold transition">
+              <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span class="hidden sm:inline">Anomalies</span>
+              <span id="nokBadgeHeader" class="px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[11px] mono font-bold">0</span>
+            </button>
+
+            <button onclick="window.print()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition shadow">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              <span>PDF</span>
+            </button>
+
+            <div class="relative">
+              <button id="menuBtn" onclick="toggleMenu(event)" aria-label="Menu" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-200 transition">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Global Progress Bar -->
+        <div class="mt-3 pt-2.5 border-t border-slate-800/90">
+          <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold mb-1.5">
+            <div class="flex items-center gap-2">
+              <span class="text-slate-300">Avancement : <strong id="progressPercent" class="text-white mono">0%</strong></span>
+              <span class="text-slate-500">(<span id="completedCount" class="mono">0</span>/286)</span>
+            </div>
+            <div class="flex items-center gap-2.5 mono">
+              <span class="text-emerald-400">OK: <strong id="okCount">0</strong></span>
+              <span class="text-rose-400">NOK: <strong id="nokCount">0</strong></span>
+              <span class="text-slate-400">N/A: <strong id="naCount">0</strong></span>
+            </div>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden flex">
+            <div id="barOk" class="bg-emerald-500 h-full transition-all duration-300" style="width:0%"></div>
+            <div id="barNok" class="bg-rose-500 h-full transition-all duration-300" style="width:0%"></div>
+            <div id="barNa" class="bg-slate-500 h-full transition-all duration-300" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Mobile-safe Dropdown Menu -->
+    <div id="dropdownMenu" class="hidden fixed left-3 right-3 sm:left-auto sm:right-6 sm:w-72 top-16 z-40 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 py-1.5 divide-y divide-slate-100 no-print">
+      <div class="px-4 py-2.5 bg-slate-50 rounded-t-2xl">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Compte connecté</p>
+        <p id="menuUserEmail" class="text-xs font-bold text-slate-700 truncate">—</p>
+      </div>
+      <div class="py-1">
+        <button onclick="exportCSV(); closeMenu();" class="w-full px-4 py-2.5 text-left text-xs font-semibold hover:bg-slate-50 flex items-center gap-3 text-slate-700">
+          <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>Exporter en Excel (.csv)</span>
+        </button>
+        <button onclick="openSecurityModal(); closeMenu();" class="w-full px-4 py-2.5 text-left text-xs font-semibold hover:bg-slate-50 flex items-center gap-3 text-slate-700">
+          <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          <span>Sécurité & Mot de passe</span>
+        </button>
+        <button onclick="resetVisitData(); closeMenu();" class="w-full px-4 py-2.5 text-left text-xs font-semibold hover:bg-amber-50 flex items-center gap-3 text-amber-700">
+          <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span>Nouvelle Visite (Réinitialiser)</span>
+        </button>
+      </div>
+      <div class="py-1">
+        <button onclick="lockApp(); closeMenu();" class="w-full px-4 py-2.5 text-left text-xs font-bold hover:bg-rose-50 flex items-center gap-3 text-rose-600">
+          <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Verrouiller le Poste</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="max-w-5xl mx-auto px-3 sm:px-6 pt-4 space-y-4">
+
+      <!-- Shift / Chef de Quart Info Card -->
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3.5 sm:p-4 print-card">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Chef de Quart</label>
+            <input id="metaChef" type="text" placeholder="Ex: Ayman" oninput="saveMeta()" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Quart / Équipe</label>
+            <select id="metaQuart" onchange="saveMeta()" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500">
+              <option value="Matin (06h-14h)">Matin (06h-14h)</option>
+              <option value="Après-midi (14h-22h)">Après-midi (14h-22h)</option>
+              <option value="Nuit (22h-06h)">Nuit (22h-06h)</option>
+              <option value="Journée normale">Journée normale</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Date de la VTI</label>
+            <input id="metaDate" type="date" onchange="saveMeta()" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Conditions / État</label>
+            <input id="metaWeather" type="text" placeholder="Ex: Temps clair / Normal" oninput="saveMeta()" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Safety Banner -->
+      <div class="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 flex items-start gap-2.5 text-xs text-amber-900 print-card">
+        <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <p class="leading-snug"><strong>Rappel sécurité (CDP) :</strong> S'assurer des conditions sécuritaires de travail suivant les dispositions prévues par le CDP et les consignes particulières du Poste Source Maachou 2 avant toute opération.</p>
+      </div>
+
+      <!-- 12 Equipment Tabs -->
+      <div class="no-print">
+        <div id="tabsContainer" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1"></div>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 no-print">
+        <div class="relative flex-1">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input id="searchInput" type="text" placeholder="Rechercher un point de contrôle, équipement..." oninput="renderChecklist()" class="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500 shadow-sm" />
+        </div>
+        <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar">
+          <button onclick="setFilter('ALL')" data-filter="ALL" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition bg-slate-900 text-white">Tous</button>
+          <button onclick="setFilter('TODO')" data-filter="TODO" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-600 hover:bg-slate-100">À faire</button>
+          <button onclick="setFilter('OK')" data-filter="OK" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition text-emerald-700 hover:bg-emerald-50">OK</button>
+          <button onclick="setFilter('NOK')" data-filter="NOK" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition text-rose-700 hover:bg-rose-50">NOK</button>
+          <button onclick="setFilter('NA')" data-filter="NA" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-600 hover:bg-slate-100">N/A</button>
+        </div>
+      </div>
+
+      <!-- Checklist Items Container -->
+      <div id="checklistContainer" class="space-y-4"></div>
+
+      <!-- Print Signature Block -->
+      <div class="hidden print-only mt-8 pt-6 border-t-2 border-slate-800">
+        <div class="grid grid-cols-2 gap-8 text-xs">
+          <div>
+            <p class="font-bold uppercase mb-1">Visa du Chef de Quart (Exécutant VTI)</p>
+            <p id="printChefInfo" class="text-slate-600 mb-10">Nom & Date :</p>
+            <div class="border-b border-dashed border-slate-400 w-48"></div>
+          </div>
+          <div>
+            <p class="font-bold uppercase mb-1">Visa Responsable Exploitation / Maintenance</p>
+            <p class="text-slate-600 mb-10">Observations & Visa :</p>
+            <div class="border-b border-dashed border-slate-400 w-48"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: SYNTHESE & ANOMALIES -->
+  <div id="summaryModal" class="hidden fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 no-print">
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[88vh]">
+      <div class="px-4 py-3.5 bg-slate-900 text-white flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-extrabold">Synthèse VTI & Anomalies (NOK)</h2>
+          <p id="summarySubtitle" class="text-[11px] text-slate-400">Poste Source Maachou 2</p>
+        </div>
+        <button onclick="closeSummaryModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300">✕</button>
+      </div>
+      <div id="summaryBody" class="p-4 overflow-y-auto space-y-3 text-xs flex-1"></div>
+      <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
+        <button onclick="copySummaryText()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition">
+          Copier le rapport texte
+        </button>
+        <button onclick="closeSummaryModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SECURITY & PASSWORD -->
+  <div id="securityModal" class="hidden fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 no-print">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="px-4 py-3.5 bg-slate-900 text-white flex items-center justify-between">
+        <h2 class="text-sm font-extrabold">Sécurité & Mot de passe</h2>
+        <button onclick="closeSecurityModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300">✕</button>
+      </div>
+      <div class="p-4 space-y-3.5 text-xs">
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <span class="text-[10px] font-bold uppercase text-slate-400 block">E-mail propriétaire du compte</span>
+          <strong id="secRegisteredEmail" class="text-slate-800 text-sm">—</strong>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Confirmer votre adresse E-mail</label>
+          <input id="secVerifyEmail" type="email" placeholder="Saisissez votre e-mail" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Mot de passe actuel</label>
+          <input id="secOldPass" type="password" placeholder="••••••••" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Nouveau mot de passe</label>
+          <input id="secNewPass" type="password" placeholder="••••••••" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500" />
+        </div>
+        <p id="secMsg" class="font-semibold hidden"></p>
+        <div class="flex justify-end gap-2 pt-1">
+          <button onclick="closeSecurityModal()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold">Annuler</button>
+          <button onclick="handleChangePassword()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const VTI_DATA = {"Tr": [{"id": "1", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement"}, {"id": "2", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement le niveau d'huile de la cuve du Tr HTB/HTA (ballonet)"}, {"id": "3", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'absence des fuites d'huile du Tr HTB/HTA (étanchéité)"}, {"id": "4", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des éclateurs des bornes HTB du Tr HTB/HTA"}, {"id": "5", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier le nombre et l'état des chaines d'ancrage HTB"}, {"id": "6", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des connexions, isolateurs et raccords HTB du Tr HTB/HTA"}, {"id": "7", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de la porcelaine des bornes HTB du Tr HTB/HTA"}, {"id": "8", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de la porcelaine des bornes HTA du Tr HTB/HTA"}, {"id": "9", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des TC Bushing"}, {"id": "10", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du TC Cuve"}, {"id": "11", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du système d'isolement de la cuve du Tr HTB/HTA"}, {"id": "12", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des conducteurs, connexions, isolateurs et raccords HTA"}, {"id": "13", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier l'état du thermomètre du Tr HTB/HTA"}, {"id": "14", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état, la quantité et la couleur de l'actigel du thermomètre"}, {"id": "15", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier l'état du thermostat du Tr HTB/HTA"}, {"id": "16", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état, la quantité et la couleur de l'actigel du Tr HTB/HTA"}, {"id": "17", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'éclairage de l'armoire de traitement d'huile"}, {"id": "18", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier l'état de fonctionnement des chauffages de l'armoire de traitement d'huile"}, {"id": "19", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'étanchéité de l'armoire de traitement d'huile"}, {"id": "20", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de MALT de l'armoire de traitement d'huile"}, {"id": "21", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de MALT de l'armoire des services auxiliaires"}, {"id": "22", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'éclairage de l'armoire des services auxiliaires"}, {"id": "23", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de ventilation de l'armoire des services auxiliaires"}, {"id": "24", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier l'état de fonctionnement des chauffages de l'armoire des services auxiliaires"}, {"id": "25", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'indicateur du circulation d'huile du Tr HTB/HTA"}, {"id": "26", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de la peinture de la cuve du Tr HTB/HTA"}, {"id": "27", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie du Tr HTB/HTA"}, {"id": "28", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier l'état de fonctionnement des ventilateurs du Tr HTB/HTA"}, {"id": "29", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier l'état de fonctionnement de la pompe à huile du Tr HTB/HTA"}, {"id": "30", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement le niveau d'huile de la cuve du régleur"}, {"id": "31", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'absence des fuites d'huile du régleur"}, {"id": "32", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état, la quantité et la couleur de l'actigel du régleur"}, {"id": "33", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'éclairage de l'armoire du régleur en charge"}, {"id": "34", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier l'état de fonctionnement des chauffages de l'armoire du régleur en charge"}, {"id": "35", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'étanchéité de l'armoire du régleur en charge"}, {"id": "36", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de MALT de l'armoire du régleur en charge"}, {"id": "37", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de ventilation de l'armoire du régleur en charge"}, {"id": "38", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'absence de fuite d'huile de la pompe à huile"}, {"id": "39", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'absence de traces de corrosion de la pompe à huile"}, {"id": "40", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de la peinture de la pompe à huile"}, {"id": "41", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des brides, supports de fixation et joints de la pompe à huile"}, {"id": "42", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Relever l'index de fonctionnement de la pompe"}, {"id": "43", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Relever la charge du Tr HTB/HTA"}, {"id": "44", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Relever la valeur indiquée par le thermomètre"}, {"id": "45", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Relever la valeur indiquée par le manomètre de la pompe à huile"}, {"id": "46", "equipment": "Transformateur de Puissance HTB/HTA n° 1", "category": "Appareillage HTB-HTA", "visitType": "Visite I (Mensuelle)", "operation": "Relever l'index du compteur de passage des prises du régleur en charge du Tr HTB/HTA"}], "TSA": [{"id": "1", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement TSA"}, {"id": "2", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement le niveau d'huile de la cuve du TSA (ballonet)"}, {"id": "3", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'absence des fuites d'huile du TSA (étanchéité)"}, {"id": "4", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des connexions et raccords HTA du TSA"}, {"id": "5", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de la porcelaine des bornes HTA du TSA"}, {"id": "6", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des connexions et raccords BT du TSA"}, {"id": "7", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de la porcelaine des bornes BT du TSA"}, {"id": "8", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des conducteurs, connexions et raccords BT"}, {"id": "9", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de la peinture de la cuve du TSA"}, {"id": "10", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie du TSA"}, {"id": "11", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état du thermomètre du TSA"}, {"id": "12", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état, la quantité et la couleur de l'actigel du thermomètre du TSA"}, {"id": "13", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Relever la valeur indiquée par le thermomètre"}, {"id": "14", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état du DGPT2 du TSA"}, {"id": "15", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de MALT des armoires et cuve du TSA"}, {"id": "16", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de chauffage de l'armoire de commande du TSA"}, {"id": "17", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'éclairage de l'armoire de commande du TSA"}, {"id": "18", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de ventilation de l'armoire de commande du TSA"}, {"id": "19", "equipment": "Transformateur de Puissance TSA", "category": "Appareillage HTA-BT", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier l'état du bloc déclencheur du TSA"}], "Sect. Disj. HTB": [{"id": "1", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement"}, {"id": "2", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du sectionneur HTB (propreté, traces d'amorçages, ,,,)"}, {"id": "3", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement la bonne fermeture du sectionneur"}, {"id": "4", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des mâchoires et couteaux"}, {"id": "5", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement la tringlerie (ex, alignement, fissures, désaccouplement ,,,)"}, {"id": "6", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du circuit de terre du châssis"}, {"id": "7", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des conducteurs, connexions, isolateurs et raccords HTB"}, {"id": "8", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie du sectionneur"}, {"id": "9", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie du châssis, commande et tringlerie"}, {"id": "10", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du boitier de signalisation"}, {"id": "11", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'éclairage du coffret du sectionneur"}, {"id": "12", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier l'état de fonctionnement du chauffage du coffret du sectionneur"}, {"id": "13", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'étanchéité du coffret de commande électrique"}, {"id": "14", "equipment": "Sectionneur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du dispositif de comndanation"}, {"id": "1", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement"}, {"id": "2", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement le niveau d'huile (disj, à huile) / pression du gaz SF6 (disj, à SF6)"}, {"id": "3", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des prises de terre, conducteurs, connexions, isolateurs et raccords HTB"}, {"id": "4", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de la commande (ex, chaine, ressort, courrie, réarmement moteurs)"}, {"id": "5", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement la tringlerie (ex, fissures, désaccouplement ,,,)"}, {"id": "6", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie du disjoncteur"}, {"id": "7", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie du châssis, commande et tringlerie"}, {"id": "8", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'étanchéité des pôles (disj, à huile)"}, {"id": "9", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de l'étanchéité du coffret de commande du disjoncteur"}, {"id": "10", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'éclairage du coffret de commande du disjoncteur"}, {"id": "11", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier l'état de fonctionnement du chauffage du coffret de commande du disjoncteur"}, {"id": "12", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Commande réarmé (ressort tendu) ?"}, {"id": "13", "equipment": "Disjoncteur HTB", "category": "Appareillage HTB", "visitType": "Visite I (Mensuelle)", "operation": "Relever l'index du compteur de manœuvres"}], "Cell. HTA": [{"id": "1", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement"}, {"id": "2", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement le niveau d'huile (disj, à huile) / pression du gaz SF6 (disj, à SF6)"}, {"id": "3", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des prises de terre, conducteurs, connexions, isolateurs et raccords HTA"}, {"id": "4", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de la commande (ex, chaine, ressort, courrie, réarmement moteurs)"}, {"id": "5", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement la tringlerie (ex, fissures, désaccouplement ,,,)"}, {"id": "6", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie du disjoncteur"}, {"id": "7", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie du châssis, commande et tringlerie"}, {"id": "8", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'étanchéité des pôles (disj, à huile)"}, {"id": "9", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de l'étanchéité du coffret de commande du disjoncteur"}, {"id": "10", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'éclairage du coffret de commande du disjoncteur"}, {"id": "11", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier l'état de fonctionnement du chauffage du coffret de commande du disjoncteur"}, {"id": "12", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Commande réarmé (ressort tendu) ?"}, {"id": "13", "equipment": "Disjoncteur HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Relever l'index du compteur de manœuvres"}, {"id": "14", "equipment": "Disjoncteur HTA", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement la sulfatation au niveau des connexions des batteries"}, {"id": "16", "equipment": "Disjoncteur HTA", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Vérification de gonflement éventuel"}, {"id": "15", "equipment": "Disjoncteur HTA", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Relever la valeur de la tension totale de la batterie (redresseur en floating)"}, {"id": "1", "equipment": "Réducteur de mesure TC HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement"}, {"id": "2", "equipment": "Réducteur de mesure TC HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du réducteur HTA (propreté, traces d'amorçages, ,,,)"}, {"id": "3", "equipment": "Réducteur de mesure TC HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement le niveau d'huile"}, {"id": "4", "equipment": "Réducteur de mesure TC HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'absence des fuites d'huile"}, {"id": "5", "equipment": "Réducteur de mesure TC HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des isolateurs en porcelaine"}, {"id": "6", "equipment": "Réducteur de mesure TC HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie"}, {"id": "7", "equipment": "Réducteur de mesure TC HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du circuit de terre"}, {"id": "8", "equipment": "Réducteur de mesure TC HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'étanchéité des coffrets de regroupement"}, {"id": "9", "equipment": "Réducteur de mesure TC HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'absence des arcs de contournement"}, {"id": "1", "equipment": "Réducteur de mesure TT HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement"}, {"id": "2", "equipment": "Réducteur de mesure TT HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du réducteur HTA (propreté, traces d'amorçages, ,,,)"}, {"id": "3", "equipment": "Réducteur de mesure TT HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement le niveau d'huile"}, {"id": "4", "equipment": "Réducteur de mesure TT HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'absence des fuites d'huile"}, {"id": "5", "equipment": "Réducteur de mesure TT HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des isolateurs en porcelaine"}, {"id": "6", "equipment": "Réducteur de mesure TT HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie"}, {"id": "7", "equipment": "Réducteur de mesure TT HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du circuit de terre"}, {"id": "8", "equipment": "Réducteur de mesure TT HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'étanchéité des coffrets de regroupement"}, {"id": "9", "equipment": "Réducteur de mesure TT HTA", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'absence des arcs de contournement"}, {"id": "1", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement"}, {"id": "2", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du sectionneur HTA (propreté, traces d'amorçages, ,,,)"}, {"id": "3", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement la bonne fermeture du sectionneur"}, {"id": "4", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des mâchoires et couteaux"}, {"id": "5", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement la tringlerie (ex, fissures, désaccouplement ,,,)"}, {"id": "6", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des conducteurs, connexions, isolateurs et raccords HTA"}, {"id": "7", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie du sectionneur"}, {"id": "8", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'oxydation de la boulonnerie du châssis, commande et tringlerie"}, {"id": "9", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de MALT du châssis"}, {"id": "10", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du boitier de signalisation"}, {"id": "11", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de l'éclairage du coffret de commande électrique"}, {"id": "12", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de chauffage du coffret de commande électrique"}, {"id": "13", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état d'étanchéité du coffret de commande électrique"}, {"id": "14", "equipment": "Sectionneur HTA général", "category": "Appareillage HTA", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du dispositif de condamnation"}], "Batteries": [{"id": "1", "equipment": "Batteries stationnaires 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement"}, {"id": "3", "equipment": "Batteries stationnaires 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement le niveau de l'electrolyte de chaque élément"}, {"id": "4", "equipment": "Batteries stationnaires 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des bacs des batteries (fissures, propreté, fuite de l'electrolyte)"}, {"id": "5", "equipment": "Batteries stationnaires 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement la sulfatation au niveau des connexions"}, {"id": "6", "equipment": "Batteries stationnaires 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du châssis des batteries"}, {"id": "7", "equipment": "Batteries stationnaires 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des barettes et de la boulonnerie"}, {"id": "10", "equipment": "Batteries stationnaires 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Vérification de gonflement éventuel"}, {"id": "11", "equipment": "Batteries stationnaires 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des plaques à l'intérieur des bacs transparents"}, {"id": "8", "equipment": "Batteries stationnaires 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Relever la valeur de la tension totale de la batterie (redresseur en floating)"}], "Redresseurs": [{"id": "1", "equipment": "Redresseurs 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement"}, {"id": "2", "equipment": "Redresseurs 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état du redresseur (propreté, traces d'amorçage ,,,)"}, {"id": "3", "equipment": "Redresseurs 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement le fonctionnement du redresseur (ampèremètre et voltmètre)"}, {"id": "4", "equipment": "Redresseurs 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement le fonctionnement du témoin marche/arrêt"}, {"id": "5", "equipment": "Redresseurs 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Mesurer les valeurs de tension alternative au niveau du redresseur (entrée)"}, {"id": "6", "equipment": "Redresseurs 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Mesurer les valeurs de courant alternative au niveau du redresseur (entrée)"}, {"id": "7", "equipment": "Redresseurs 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Mesurer les valeurs de tension au niveau du redresseur (arrivée batteries)"}, {"id": "8", "equipment": "Redresseurs 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Mesurer les valeurs de courant au niveau du redresseur (arrivée batteries)"}, {"id": "9", "equipment": "Redresseurs 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Mesurer les valeurs de tension au niveau du redresseur (sortie redresseur)"}, {"id": "10", "equipment": "Redresseurs 127V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Mesurer les valeurs de courant au niveau du redresseur (sortie redresseur)"}], "Armoires": [{"id": "1", "equipment": "Armoire des auxiliaires alternatifs et 127 V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement"}, {"id": "2", "equipment": "Armoire des auxiliaires alternatifs et 127 V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement le fonctionnement des indicateurs (ampèremètre et voltmètre)"}, {"id": "3", "equipment": "Armoire des auxiliaires alternatifs et 127 V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état de l'armoire (propreté, traces d'amorçage ,,,)"}, {"id": "4", "equipment": "Armoire des auxiliaires alternatifs et 127 V", "category": "Services Auxiliaires", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler visuellement l'état des voyants"}], "Résistance neutre": [{"id": "1", "equipment": "Résistance du neutre", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état de l'étiquetage de l'équipement"}, {"id": "2", "equipment": "Résistance du neutre", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état des blocs de résistance"}, {"id": "3", "equipment": "Résistance du neutre", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état du TC incorporé"}, {"id": "4", "equipment": "Résistance du neutre", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Vérifier visuellement l'état des isolateurs support barre HTA"}], "Env. Ext.": [{"id": "1", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Accès dégagé"}, {"id": "2", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Propreté"}, {"id": "3", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de maçonnerie"}, {"id": "4", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la peinture extérieure"}, {"id": "5", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la plateforme"}, {"id": "6", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence de fissures"}, {"id": "7", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des regards de visite"}, {"id": "8", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des caniveaux et dalles des ragards"}, {"id": "9", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Drapeau national"}, {"id": "10", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Identité visuelle"}, {"id": "11", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de désherbage"}, {"id": "12", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la porte d'accès"}, {"id": "13", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des paumelles"}, {"id": "14", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des arêtoires"}, {"id": "15", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Vidéosurveillé"}, {"id": "16", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Protection contre intrusion (cadens)"}, {"id": "17", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Grillage (fil barbelé sur le mur de clôture)"}, {"id": "18", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de l'éclairage extérieur"}, {"id": "19", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de l'éclairage de secours"}, {"id": "20", "equipment": "Environnement extéreur et clôture", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat du circuit de la terre"}], "Env. Int.": [{"id": "1", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de maçonnerie"}, {"id": "2", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la peinture intérieure"}, {"id": "3", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la plateforme"}, {"id": "4", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence de fissures"}, {"id": "5", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des regards de visite des différents bâtiments"}, {"id": "6", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la cuve de rétention d'eau"}, {"id": "7", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des caniveaux, dalles et tôles striées des regards"}, {"id": "8", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Accès dégagé"}, {"id": "9", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Propreté"}, {"id": "10", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de désherbage"}, {"id": "11", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Ventilation du local"}, {"id": "12", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des rails et pivots"}, {"id": "13", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Vidéosurveillé"}, {"id": "14", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de l'abri des extincteurs (poste extérieur)"}, {"id": "15", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence de détecteur d'incendie"}, {"id": "16", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de fonctionnement du détecteur d'incendie"}, {"id": "17", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Protection contre incendie TR"}, {"id": "18", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Système d'extinction automatique à gaz"}, {"id": "19", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence de bacs à sable"}, {"id": "20", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Extincteurs"}, {"id": "21", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de l'éclairage intérieur"}, {"id": "22", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de l'éclairage de secours"}, {"id": "23", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des prises de courant"}, {"id": "24", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Câbles détériorés (rongés)"}, {"id": "25", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat du circuit de la terre"}, {"id": "26", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence d'excréments"}, {"id": "27", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Boites d'appâts présentes"}, {"id": "28", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Appâts renouvelés"}, {"id": "29", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Absence de terriers"}, {"id": "30", "equipment": "Environnement intérieur", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence de traces de rongeurs"}], "Bat. Cmd et batteries": [{"id": "1", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de maçonnerie"}, {"id": "2", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la peinture"}, {"id": "3", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de l'étancheité"}, {"id": "4", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la plateforme"}, {"id": "5", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la porte antipanique"}, {"id": "6", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence de fissures"}, {"id": "7", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la conduite d'eau pluviale (détérioré, obturée)"}, {"id": "9", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des caniveaux, dalles et tôles striées des ragards"}, {"id": "11", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Accès dégagé"}, {"id": "12", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Plaque d'identification physique"}, {"id": "13", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Propreté"}, {"id": "14", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Chauffage et climatisation"}, {"id": "15", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Ventilation du local"}, {"id": "16", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Vidéosurveillé"}, {"id": "16", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence d'extracteur"}, {"id": "17", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de fonctionnement de l'extracteur (salle des batteries)"}, {"id": "18", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler la disponibilité et l'état du matériel de sécurité"}, {"id": "19", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence de détecteur d'incendie"}, {"id": "20", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de fonctionnement du détecteur d'incendie"}, {"id": "21", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Protection contre intrusion (cadenas)"}, {"id": "22", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Extincteurs"}, {"id": "23", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat du mobilier du bureau"}, {"id": "24", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "IHM"}, {"id": "25", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "EMS / Consignateur d'état"}, {"id": "26", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de l'éclairage intérieur"}, {"id": "27", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de l'éclairage de secours"}, {"id": "28", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des prises de courant"}, {"id": "29", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Câbles détériorés (rongés)"}, {"id": "30", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat du circuit de la terre"}, {"id": "31", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la porte d'accès"}, {"id": "32", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des paumelles"}, {"id": "33", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des arêtoires"}, {"id": "34", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence d'excréments"}, {"id": "35", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Boites d'appâts présentes"}, {"id": "36", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Appâts renouvelés"}, {"id": "37", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Absence de terriers"}, {"id": "38", "equipment": "Bâtiment de commande et batteries", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence de traces de rongeurs"}], "Bat. Gardien": [{"id": "1", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de maçonnerie"}, {"id": "2", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la peinture"}, {"id": "3", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de l'étancheité"}, {"id": "4", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence de fissures"}, {"id": "5", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la plateforme"}, {"id": "6", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la porte antipanique"}, {"id": "7", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la conduite d'eau pluviale (détérioré, obturée)"}, {"id": "8", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des caniveaux, dalles et tôles striées des ragards"}, {"id": "9", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Accès dégagé"}, {"id": "10", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Plaque d'identification physique"}, {"id": "11", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Propreté"}, {"id": "12", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Chauffage et climatisation"}, {"id": "13", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Ventilation du local"}, {"id": "14", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Vidéosurveillé"}, {"id": "15", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Contrôler la disponibilité et l'état du matériel de sécurité"}, {"id": "16", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence de détecteur d'incendie"}, {"id": "17", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de fonctionnement du détecteur d'incendie"}, {"id": "18", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Protection contre intrusion (cadenas)"}, {"id": "19", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Extincteurs"}, {"id": "20", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de l'éclairage intérieur"}, {"id": "21", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de l'éclairage de secours"}, {"id": "22", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des prises de courant"}, {"id": "23", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Câbles détériorés (rongés)"}, {"id": "24", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat du circuit de la terre"}, {"id": "25", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat de la porte d'accès"}, {"id": "26", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des paumelles"}, {"id": "27", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Etat des arêtoires"}, {"id": "28", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence d'excréments"}, {"id": "29", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Boites d'appâts présentes"}, {"id": "30", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Appâts renouvelés"}, {"id": "31", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Absence de terriers"}, {"id": "32", "equipment": "Bâtiment gardien", "category": "Poste source", "visitType": "Visite I (Mensuelle)", "operation": "Présence de traces de rongeurs"}]};
+    const STORAGE_AUTH = 'vti_maachou2_auth_v1';
+    const STORAGE_STATE = 'vti_maachou2_state_v1';
+    const STORAGE_META = 'vti_maachou2_meta_v1';
+
+    let activeSheet = Object.keys(VTI_DATA)[0];
+    let currentFilter = 'ALL';
+    let checkState = JSON.parse(localStorage.getItem(STORAGE_STATE) || '{}');
+    let metaState = JSON.parse(localStorage.getItem(STORAGE_META) || '{}');
+
+    function getAuth() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_AUTH)); } catch { return null; }
+    }
+
+    function initAuth() {
+      const auth = getAuth();
+      document.getElementById('authScreen').classList.remove('hidden');
+      document.getElementById('appShell').classList.add('hidden');
+      if (!auth || !auth.email || !auth.password) {
+        document.getElementById('registerBox').classList.remove('hidden');
+        document.getElementById('loginBox').classList.add('hidden');
+        document.getElementById('resetBox').classList.add('hidden');
+      } else {
+        document.getElementById('registerBox').classList.add('hidden');
+        document.getElementById('loginBox').classList.remove('hidden');
+        document.getElementById('resetBox').classList.add('hidden');
+      }
+    }
+
+    function handleRegister() {
+      const email = document.getElementById('regEmail').value.trim().toLowerCase();
+      const pass = document.getElementById('regPass').value;
+      const confirm = document.getElementById('regPassConfirm').value;
+      const err = document.getElementById('regError');
+      err.classList.add('hidden');
+
+      if (!email || !email.includes('@') || !email.includes('.')) {
+        err.textContent = 'Veuillez saisir une adresse e-mail valide.';
+        err.classList.remove('hidden');
+        return;
+      }
+      if (pass.length < 4) {
+        err.textContent = 'Le mot de passe doit contenir au moins 4 caractères.';
+        err.classList.remove('hidden');
+        return;
+      }
+      if (pass !== confirm) {
+        err.textContent = 'Les deux mots de passe ne correspondent pas.';
+        err.classList.remove('hidden');
+        return;
+      }
+      localStorage.setItem(STORAGE_AUTH, JSON.stringify({ email, password: pass }));
+      unlockApp(email);
+    }
+
+    function handleLogin() {
+      const auth = getAuth();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const pass = document.getElementById('loginPass').value;
+      const err = document.getElementById('loginError');
+      err.classList.add('hidden');
+
+      if (!auth) { initAuth(); return; }
+      if (email !== auth.email || pass !== auth.password) {
+        err.textContent = 'Adresse e-mail ou mot de passe incorrect.';
+        err.classList.remove('hidden');
+        return;
+      }
+      document.getElementById('loginPass').value = '';
+      unlockApp(auth.email);
+    }
+
+    function toggleResetView(showReset) {
+      document.getElementById('loginBox').classList.toggle('hidden', showReset);
+      document.getElementById('resetBox').classList.toggle('hidden', !showReset);
+      document.getElementById('resetError').classList.add('hidden');
+      document.getElementById('resetSuccess').classList.add('hidden');
+    }
+
+    function handleResetPassword() {
+      const auth = getAuth();
+      const email = document.getElementById('resetEmail').value.trim().toLowerCase();
+      const newPass = document.getElementById('resetNewPass').value;
+      const confirmPass = document.getElementById('resetConfirmPass').value;
+      const err = document.getElementById('resetError');
+      const ok = document.getElementById('resetSuccess');
+      err.classList.add('hidden');
+      ok.classList.add('hidden');
+
+      if (!auth || email !== auth.email) {
+        err.textContent = 'Cette adresse e-mail ne correspond pas au compte enregistré.';
+        err.classList.remove('hidden');
+        return;
+      }
+      if (newPass.length < 4) {
+        err.textContent = 'Le nouveau mot de passe doit contenir au moins 4 caractères.';
+        err.classList.remove('hidden');
+        return;
+      }
+      if (newPass !== confirmPass) {
+        err.textContent = 'La confirmation du mot de passe ne correspond pas.';
+        err.classList.remove('hidden');
+        return;
+      }
+      localStorage.setItem(STORAGE_AUTH, JSON.stringify({ email: auth.email, password: newPass }));
+      ok.textContent = 'Mot de passe mis à jour avec succès. Connexion...';
+      ok.classList.remove('hidden');
+      setTimeout(() => {
+        document.getElementById('resetEmail').value = '';
+        document.getElementById('resetNewPass').value = '';
+        document.getElementById('resetConfirmPass').value = '';
+        unlockApp(auth.email);
+      }, 800);
+    }
+
+    function unlockApp(email) {
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('appShell').classList.remove('hidden');
+      document.getElementById('menuUserEmail').textContent = email;
+      loadMeta();
+      renderTabs();
+      renderChecklist();
+      updateStats();
+    }
+
+    function lockApp() {
+      initAuth();
+    }
+
+    function toggleMenu(e) {
+      e.stopPropagation();
+      document.getElementById('dropdownMenu').classList.toggle('hidden');
+    }
+    function closeMenu() {
+      document.getElementById('dropdownMenu').classList.add('hidden');
+    }
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('dropdownMenu');
+      const btn = document.getElementById('menuBtn');
+      if (!menu.classList.contains('hidden') && !menu.contains(e.target) && !btn.contains(e.target)) {
+        closeMenu();
+      }
+    });
+
+    function openSecurityModal() {
+      const auth = getAuth();
+      document.getElementById('secRegisteredEmail').textContent = auth ? auth.email : '—';
+      document.getElementById('secVerifyEmail').value = '';
+      document.getElementById('secOldPass').value = '';
+      document.getElementById('secNewPass').value = '';
+      document.getElementById('secMsg').classList.add('hidden');
+      document.getElementById('securityModal').classList.remove('hidden');
+    }
+    function closeSecurityModal() {
+      document.getElementById('securityModal').classList.add('hidden');
+    }
+    function handleChangePassword() {
+      const auth = getAuth();
+      const vEmail = document.getElementById('secVerifyEmail').value.trim().toLowerCase();
+      const oldP = document.getElementById('secOldPass').value;
+      const newP = document.getElementById('secNewPass').value;
+      const msg = document.getElementById('secMsg');
+      msg.classList.remove('hidden', 'text-rose-600', 'text-emerald-600');
+
+      if (!auth || vEmail !== auth.email) {
+        msg.textContent = 'Adresse e-mail incorrecte.';
+        msg.classList.add('text-rose-600');
+        return;
+      }
+      if (oldP !== auth.password) {
+        msg.textContent = 'Mot de passe actuel incorrect.';
+        msg.classList.add('text-rose-600');
+        return;
+      }
+      if (newP.length < 4) {
+        msg.textContent = 'Le nouveau mot de passe doit contenir au moins 4 caractères.';
+        msg.classList.add('text-rose-600');
+        return;
+      }
+      localStorage.setItem(STORAGE_AUTH, JSON.stringify({ email: auth.email, password: newP }));
+      msg.textContent = 'Mot de passe modifié avec succès !';
+      msg.classList.add('text-emerald-600');
+      setTimeout(closeSecurityModal, 900);
+    }
+
+    function loadMeta() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('metaChef').value = metaState.chef || '';
+      document.getElementById('metaQuart').value = metaState.quart || 'Matin (06h-14h)';
+      document.getElementById('metaDate').value = metaState.date || today;
+      document.getElementById('metaWeather').value = metaState.weather || '';
+      updatePrintHeader();
+    }
+    function saveMeta() {
+      metaState = {
+        chef: document.getElementById('metaChef').value,
+        quart: document.getElementById('metaQuart').value,
+        date: document.getElementById('metaDate').value,
+        weather: document.getElementById('metaWeather').value
+      };
+      localStorage.setItem(STORAGE_META, JSON.stringify(metaState));
+      updatePrintHeader();
+    }
+    function updatePrintHeader() {
+      document.getElementById('printChefInfo').textContent =
+        `Chef de Quart : ${metaState.chef || '—'} | Quart : ${metaState.quart || '—'} | Date : ${metaState.date || '—'}`;
+    }
+
+    function detectUnit(opText) {
+      const t = opText.toLowerCase();
+      if (!t.includes('relever') && !t.includes('mesurer')) return null;
+      if (t.includes('thermomètre') || t.includes('température')) return '°C';
+      if (t.includes('tension')) return 'V';
+      if (t.includes('courant')) return 'A';
+      if (t.includes('manomètre') || t.includes('pression')) return 'bar';
+      if (t.includes('charge')) return 'MVA / A';
+      if (t.includes('index') || t.includes('compteur')) return 'Index';
+      return 'Valeur';
+    }
+
+    function getItemKey(sheet, idx) {
+      return `${sheet}__${idx}`;
+    }
+
+    function renderTabs() {
+      const container = document.getElementById('tabsContainer');
+      container.innerHTML = Object.keys(VTI_DATA).map(sheet => {
+        const items = VTI_DATA[sheet];
+        let done = 0, hasNok = false;
+        items.forEach((_, idx) => {
+          const st = checkState[getItemKey(sheet, idx)]?.status;
+          if (st) done++;
+          if (st === 'NOK') hasNok = true;
+        });
+        const isActive = sheet === activeSheet;
+        const badgeColor = hasNok
+          ? 'bg-rose-500 text-white'
+          : done === items.length
+            ? 'bg-emerald-500 text-white'
+            : isActive ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-600';
+
+        return `
+          <button onclick="selectSheet('${sheet.replace(/'/g, "\\'")}')"
+            class="px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 border ${
+              isActive
+                ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+            }">
+            <span>${sheet}</span>
+            <span class="px-1.5 py-0.5 rounded-md text-[10px] mono ${badgeColor}">${done}/${items.length}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectSheet(sheet) {
+      activeSheet = sheet;
+      renderTabs();
+      renderChecklist();
+    }
+
+    function setFilter(f) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        const active = btn.dataset.filter === f;
+        btn.className = `filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+          active ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+        }`;
+      });
+      renderChecklist();
+    }
+
+    function renderChecklist() {
+      const container = document.getElementById('checklistContainer');
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const items = VTI_DATA[activeSheet] || [];
+
+      const groups = {};
+      items.forEach((item, idx) => {
+        const key = getItemKey(activeSheet, idx);
+        const st = checkState[key]?.status || '';
+        if (currentFilter === 'TODO' && st !== '') return;
+        if (currentFilter === 'OK' && st !== 'OK') return;
+        if (currentFilter === 'NOK' && st !== 'NOK') return;
+        if (currentFilter === 'NA' && st !== 'NA') return;
+        if (query && !item.operation.toLowerCase().includes(query) && !item.equipment.toLowerCase().includes(query)) return;
+
+        if (!groups[item.equipment]) groups[item.equipment] = [];
+        groups[item.equipment].push({ ...item, idx, key });
+      });
+
+      const equipNames = Object.keys(groups);
+      if (equipNames.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 text-xs">
+            Aucun point de contrôle ne correspond à ce filtre dans <strong>${activeSheet}</strong>.
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = equipNames.map(equip => {
+        const rows = groups[equip];
+        const cat = rows[0].category;
+        return `
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden print-card">
+            <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600">${cat}</span>
+                <h2 class="text-sm font-extrabold text-slate-900">${equip}</h2>
+              </div>
+              <button onclick="markGroupOk('${equip.replace(/'/g, "\\'")}')" class="no-print px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 text-[11px] font-bold transition">
+                ✓ Tout marquer OK
+              </button>
+            </div>
+            <div class="divide-y divide-slate-100">
+              ${rows.map(r => {
+                const state = checkState[r.key] || { status: '', value: '', obs: '' };
+                const unit = detectUnit(r.operation);
+                const rowBg = state.status === 'NOK' ? 'bg-rose-50/50' : state.status === 'OK' ? 'bg-emerald-50/20' : '';
+                return `
+                  <div class="p-3.5 sm:p-4 space-y-2.5 ${rowBg}">
+                    <div class="flex items-start gap-2.5">
+                      <span class="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[11px] font-bold mono text-slate-600 shrink-0">#${r.id}</span>
+                      <p class="text-xs sm:text-sm font-semibold text-slate-800 leading-snug">${r.operation}</p>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 no-print">
+                      <button onclick="setStatus('${r.key}', 'OK')" class="py-2 rounded-xl text-xs font-extrabold border transition ${
+                        state.status === 'OK'
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                          : 'bg-white text-slate-600 border-slate-200 hover:bg-emerald-50'
+                      }">OK</button>
+                      <button onclick="setStatus('${r.key}', 'NOK')" class="py-2 rounded-xl text-xs font-extrabold border transition ${
+                        state.status === 'NOK'
+                          ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
+                          : 'bg-white text-slate-600 border-slate-200 hover:bg-rose-50'
+                      }">NOK</button>
+                      <button onclick="setStatus('${r.key}', 'NA')" class="py-2 rounded-xl text-xs font-extrabold border transition ${
+                        state.status === 'NA'
+                          ? 'bg-slate-700 text-white border-slate-700 shadow-sm'
+                          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                      }">N/A</button>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-2">
+                      ${unit ? `
+                        <div class="flex items-center sm:w-44 shrink-0">
+                          <input type="text" value="${escapeHtml(state.value || '')}" oninput="setField('${r.key}', 'value', this.value)"
+                            placeholder="Relevé..." class="w-full px-3 py-1.5 rounded-l-xl bg-blue-50/60 border border-blue-200 text-xs font-bold mono text-blue-950 focus:outline-none focus:border-blue-500" />
+                          <span class="px-2.5 py-1.5 rounded-r-xl bg-blue-100 border border-l-0 border-blue-200 text-[11px] font-bold mono text-blue-800">${unit}</span>
+                        </div>
+                      ` : ''}
+                      <input type="text" value="${escapeHtml(state.obs || '')}" oninput="setField('${r.key}', 'obs', this.value)"
+                        placeholder="Observation éventuelle..." class="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-blue-500" />
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function setStatus(key, status) {
+      if (!checkState[key]) checkState[key] = { status: '', value: '', obs: '' };
+      checkState[key].status = checkState[key].status === status ? '' : status;
+      persistState();
+      renderTabs();
+      renderChecklist();
+      updateStats();
+    }
+
+    function setField(key, field, val) {
+      if (!checkState[key]) checkState[key] = { status: '', value: '', obs: '' };
+      checkState[key][field] = val;
+      persistState();
+    }
+
+    function markGroupOk(equipName) {
+      if (!confirm(`Marquer tous les points de "${equipName}" comme OK ?`)) return;
+      const items = VTI_DATA[activeSheet] || [];
+      items.forEach((item, idx) => {
+        if (item.equipment === equipName) {
+          const key = getItemKey(activeSheet, idx);
+          if (!checkState[key]) checkState[key] = { status: '', value: '', obs: '' };
+          if (!checkState[key].status) checkState[key].status = 'OK';
+        }
+      });
+      persistState();
+      renderTabs();
+      renderChecklist();
+      updateStats();
+    }
+
+    function persistState() {
+      localStorage.setItem(STORAGE_STATE, JSON.stringify(checkState));
+    }
+
+    function updateStats() {
+      let total = 0, ok = 0, nok = 0, na = 0;
+      Object.keys(VTI_DATA).forEach(sheet => {
+        VTI_DATA[sheet].forEach((_, idx) => {
+          total++;
+          const st = checkState[getItemKey(sheet, idx)]?.status;
+          if (st === 'OK') ok++;
+          else if (st === 'NOK') nok++;
+          else if (st === 'NA') na++;
+        });
+      });
+      const completed = ok + nok + na;
+      const pct = total ? Math.round((completed / total) * 100) : 0;
+
+      document.getElementById('progressPercent').textContent = pct + '%';
+      document.getElementById('completedCount').textContent = completed;
+      document.getElementById('okCount').textContent = ok;
+      document.getElementById('nokCount').textContent = nok;
+      document.getElementById('naCount').textContent = na;
+      document.getElementById('nokBadgeHeader').textContent = nok;
+
+      document.getElementById('barOk').style.width = ((ok / total) * 100) + '%';
+      document.getElementById('barNok').style.width = ((nok / total) * 100) + '%';
+      document.getElementById('barNa').style.width = ((na / total) * 100) + '%';
+    }
+
+    function openSummaryModal() {
+      const anomalies = [];
+      const readings = [];
+      Object.keys(VTI_DATA).forEach(sheet => {
+        VTI_DATA[sheet].forEach((item, idx) => {
+          const st = checkState[getItemKey(sheet, idx)];
+          if (st?.status === 'NOK') anomalies.push({ sheet, ...item, ...st });
+          if (st?.value) readings.push({ sheet, ...item, ...st });
+        });
+      });
+
+      document.getElementById('summarySubtitle').textContent =
+        `Chef de Quart : ${metaState.chef || '—'} • Date : ${metaState.date || '—'}`;
+
+      let html = '';
+      if (anomalies.length === 0) {
+        html += `<div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold text-center">Aucune anomalie (NOK) signalée pour le moment.</div>`;
+      } else {
+        html += `<h3 class="font-extrabold text-rose-700 uppercase tracking-wider text-[11px]">Anomalies détectées (${anomalies.length})</h3>`;
+        html += anomalies.map(a => `
+          <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-rose-900">${a.sheet} • ${a.equipment} (#${a.id})</span>
+              <span class="px-2 py-0.5 rounded bg-rose-600 text-white text-[10px] font-bold">NOK</span>
+            </div>
+            <p class="text-slate-800 font-medium">${a.operation}</p>
+            ${a.obs ? `<p class="text-rose-800 font-semibold">Obs : ${escapeHtml(a.obs)}</p>` : ''}
+          </div>
+        `).join('');
+      }
+
+      if (readings.length > 0) {
+        html += `<h3 class="font-extrabold text-blue-700 uppercase tracking-wider text-[11px] pt-2">Relevés & Mesures (${readings.length})</h3>`;
+        html += `<div class="divide-y divide-slate-200 border border-slate-200 rounded-xl overflow-hidden">` +
+          readings.map(r => `
+            <div class="px-3 py-2 bg-slate-50 flex items-center justify-between gap-2">
+              <span class="text-slate-700 truncate">${r.sheet} (#${r.id}) — ${r.operation}</span>
+              <span class="mono font-bold text-blue-700 shrink-0">${escapeHtml(r.value)} ${detectUnit(r.operation) || ''}</span>
+            </div>
+          `).join('') + `</div>`;
+      }
+
+      document.getElementById('summaryBody').innerHTML = html;
+      document.getElementById('summaryModal').classList.remove('hidden');
+    }
+
+    function closeSummaryModal() {
+      document.getElementById('summaryModal').classList.add('hidden');
+    }
+
+    function copySummaryText() {
+      let lines = [
+        `RAPPORT VTI — POSTE SOURCE MAACHOU 2 (SRM)`,
+        `Chef de Quart : ${metaState.chef || '—'} | Quart : ${metaState.quart || '—'} | Date : ${metaState.date || '—'}`,
+        `Avancement : ${document.getElementById('progressPercent').textContent} (OK: ${document.getElementById('okCount').textContent}, NOK: ${document.getElementById('nokCount').textContent}, N/A: ${document.getElementById('naCount').textContent})`,
+        `----------------------------------------`
+      ];
+      let hasNok = false;
+      Object.keys(VTI_DATA).forEach(sheet => {
+        VTI_DATA[sheet].forEach((item, idx) => {
+          const st = checkState[getItemKey(sheet, idx)];
+          if (st?.status === 'NOK') {
+            hasNok = true;
+            lines.push(`[NOK] ${sheet} - ${item.equipment} (#${item.id}): ${item.operation}${st.obs ? ' -> Obs: ' + st.obs : ''}`);
+          }
+        });
+      });
+      if (!hasNok) lines.push(`Aucune anomalie (NOK) signalée.`);
+      navigator.clipboard.writeText(lines.join('\n')).then(() => alert('Rapport copié dans le presse-papiers !'));
+    }
+
+    function exportCSV() {
+      const rows = [['Onglet', 'ID', 'Équipement', 'Catégorie', 'Statut', 'Relevé', 'Observations']];
+      Object.keys(VTI_DATA).forEach(sheet => {
+        VTI_DATA[sheet].forEach((item, idx) => {
+          const st = checkState[getItemKey(sheet, idx)] || {};
+          rows.push([
+            sheet,
+            item.id,
+            item.equipment,
+            item.category,
+            st.status || 'À faire',
+            st.value || '',
+            st.obs || ''
+          ]);
+        });
+      });
+      const csvContent = '\uFEFF' + rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `VTI_Maachou2_${metaState.date || 'visite'}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function resetVisitData() {
+      if (!confirm('Voulez-vous vraiment réinitialiser toutes les réponses de cette visite VTI ?')) return;
+      checkState = {};
+      persistState();
+      renderTabs();
+      renderChecklist();
+      updateStats();
+    }
+
+    initAuth();
+  </script>
+</body>
+</html>
